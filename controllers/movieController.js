@@ -1,13 +1,52 @@
 import db from '../config/database.js';
 
-// 1. GET ALL Movies
+// 1. GET ALL Movies (Dengan Fitur Search, Filter, & Sort)
 export const getMovies = async (req, res) => {
     try {
-        const [rows] = await db.query('SELECT * FROM movies');
+        // Ambil parameter dari URL (?search=...&year=...&sortBy=...)
+        const { search, year, sortBy } = req.query;
+
+        let query = "SELECT * FROM movies";
+        let queryParams = [];
+        let conditions = [];
+
+        // --- LOGIKA FILTER & SEARCH ---
+        
+        // 1. Jika ada 'search', cari judul yang mirip
+        if (search) {
+            conditions.push("title LIKE ?");
+            queryParams.push(`%${search}%`);
+        }
+
+        // 2. Jika ada 'year', cari tahun yang sama
+        if (year) {
+            conditions.push("year = ?");
+            queryParams.push(year);
+        }
+
+        // Gabungkan kondisi dengan kata "AND" (jika ada filter)
+        if (conditions.length > 0) {
+            query += " WHERE " + conditions.join(" AND ");
+        }
+
+        // --- LOGIKA SORTING ---
+        
+        // 3. Urutkan berdasarkan permintaan
+        if (sortBy === 'rating') {
+            query += " ORDER BY rating DESC"; // Rating tertinggi ke terendah
+        } else if (sortBy === 'oldest') {
+            query += " ORDER BY year ASC";    // Tahun terlama ke terbaru
+        } else {
+            query += " ORDER BY id DESC";     // Default: Data terbaru (input terakhir) paling atas
+        }
+
+        // Eksekusi query ke database
+        const [rows] = await db.query(query, queryParams);
         res.json(rows);
+
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: "Server Error" });
     }
 }
 
