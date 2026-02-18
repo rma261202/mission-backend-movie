@@ -1,23 +1,22 @@
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import db from './config/database.js';
-import movieRoute from './routes/movieRoute.js'; 
-import authRoute from './routes/authRoute.js'; // ✅ 1. Sudah di-import (Benar)
+import appConfig from './config/appConfig.js'; // <-- Import config
+import movieRoute from './routes/movieRoute.js';
+import authRoute from './routes/authRoute.js';
 
-dotenv.config();
 const app = express();
-const port = process.env.PORT || 3000;
+const port = appConfig.app.port; // <-- Pakai config
 
 app.use(cors());
 app.use(express.json());
-app.use('/uploads', express.static('uploads')); // <--- Folder uploads jadi publik
+app.use('/uploads', express.static('uploads'));
 
-// DAFTAR ROUTES (PINTU MASUK)
-app.use(movieRoute); 
-app.use(authRoute); // ❌ <--- Tadi baris ini HILANG. Sekarang sudah ada ✅
+// DAFTAR ROUTES
+app.use(movieRoute);
+app.use(authRoute);
 
-// Tes Koneksi saat server nyala
+// Tes Koneksi
 const testConnection = async () => {
     try {
         const [rows] = await db.query('SELECT 1 + 1 AS result');

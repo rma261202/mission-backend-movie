@@ -1,19 +1,12 @@
-import mysql from 'mysql2';
-import dotenv from 'dotenv';
-
-dotenv.config();
+import mysql from 'mysql2/promise';
+import appConfig from './appConfig.js'; // <-- Import config baru
 
 const db = mysql.createPool({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
+    host: appConfig.db.host,
+    user: appConfig.db.user,
+    password: appConfig.db.password,
+    database: appConfig.db.name,
+    port: appConfig.db.port,
 });
 
-const dbPromise = db.promise();
-console.log("🔌 Sedang menghubungkan ke database...");
-
-export default dbPromise;
+export default db;
